@@ -71,11 +71,11 @@ class Trainings_data:
 
 try:
 	conn = mariadb.connect(
-		user="team21",
-		password="te@mZIP@ss",
-		host="giniewicz.it",
+		user="-------", #user_name
+		password="-------", #password
+		host="--------", #host_adress
 		port=3306,
-		database="team21"
+		database="-------" #dtabase_name
 	)
 except mariadb.Error as e:
 	print("Connection failed")
