@@ -1,7 +1,11 @@
+#---importing  required packages 
+
 import mariadb
 import sys
 import random
 import numpy as np
+
+#---making class which store information about single training session 
 
 class Trainings_data:
 	def __init__(self, trainers, courts, for_team=False):
@@ -69,6 +73,8 @@ class Trainings_data:
 		else:
 			return(1)
 
+#---trying connect to database (if impossible stop executing script)
+		
 try:
 	conn = mariadb.connect(
 		user="-------", #user_name
@@ -81,33 +87,45 @@ except mariadb.Error as e:
 	print("Connection failed")
 	sys.exit(1)
 
+#---setting cursor and prepare usefull lists	
+
 cur = conn.cursor()
 num_of_trainings=random.randint(220,375)
-trainers=[]
-teams=[]
+trainers=[] #list storing trainers id
+teams=[] #list storing teams information (for every team list including name, date of last member joining, etc.)
 train_harmonogram=[[18,0],[18.25,0],[18.5,0],[17.5,1],[18.25,1],[18.5,1],[19.75,1],[18,2],[18.25,2],[18.5,2],[18,3],[18.25,3],[18.5,3],[17.5,4],[17.75,4],[18,4]]
+#^times of training start for every team ([start_hour, day_of_week]) 
+courts=["curling sheet 1", "curling sheet 2", "curling sheet 3"] #courts names
+
+#---importing trainers ids
 
 cur.execute(
 	"SELECT employee_id FROM employees WHERE emp_position LIKE 'Trainer'"
 )
 
+#---appending ids to list
+
 for (employee_id) in cur:
 	trainers.append(employee_id[-1])
 
+
+#---importing information about teams and appending to list
+	
 cur.execute(
 	"SELECT team , MAX(join_date) as max_date FROM players GROUP BY team;"
 )
 
-
 for (team, max_date) in cur:
 	teams.append([team, max_date])
 
-courts=["curling sheet 1", "curling sheet 2", "curling sheet 3"]
-
+#refilling data (trainer_id, court_name, start_hour, day_of_week)
+	
 for i in range(len(teams)):
 	teams[i]+=[trainers[i%8],courts[i%3],train_harmonogram[i][0],train_harmonogram[i][1]]
 
-Trainings_list=[]
+Trainings_list=[] #list of Training objects
+
+#making information about team trainings from 2020-11-16 to 2022-09-24
 
 for i in range(677):
 	for tm in teams:
@@ -124,6 +142,8 @@ for i in range(677):
 			conn.commit()
 	
 			Trainings_list.append(TR)
+
+#making information about open and inividual trainings (from 2020-11-13 to 2022-09-24)
 
 for i in range (num_of_trainings):
 	TR=Trainings_data(trainers, courts)
@@ -144,5 +164,7 @@ for i in range (num_of_trainings):
 	conn.commit()
 	
 	Trainings_list.append(TR)
+
+#closing connection
 
 conn.close()
