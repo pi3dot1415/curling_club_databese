@@ -1,4 +1,4 @@
-# curling_club_databese
+# curling_club_database
 Part of my database course project about curling club.
 
 Compilation order:
